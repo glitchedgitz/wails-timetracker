@@ -1,4 +1,4 @@
-module wails-timetracker
+module github.com/giteshnxtlvl/wails-timetracker
 
 go 1.17
 

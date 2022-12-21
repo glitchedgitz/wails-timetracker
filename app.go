@@ -60,7 +60,7 @@ func (a *App) Initialize() {
 
 	} else {
 		check(err)
-		savefile()
+		a.saveFile()
 	}
 
 	runtime.EventsEmit(a.ctx, "time", hour, minute)
@@ -70,13 +70,48 @@ func (a *App) Start() {
 	stop = false
 	a.Update()
 }
+func (a *App) Stop() {
+	stop = true
+}
+
+// func (a *App) StartTicker() {
+// 	ticker := time.NewTicker(1 * time.Minute)
+
+// 	done := make(chan bool)
+
+// 	go func() {
+// 		for {
+// 			select {
+// 			case <-done:
+// 				return
+// 			case t := <-ticker.C:
+// 				fmt.Println("Tick at", t)
+// 			}
+// 		}
+// 	}()
+
+// 	time.Sleep(1600 * time.Millisecond)
+// 	ticker.Stop()
+// 	done <- true
+// 	fmt.Println("Ticker stopped")
+// }
+
+func (a *App) SetTime(h, m int) {
+	hour = h
+	minute = m
+}
 
 func (a *App) Update() {
+
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		for {
 			time.Sleep(1 * time.Minute)
+
+			if stop {
+				break
+			}
 
 			if minute == 60 {
 				hour += 1
@@ -86,24 +121,16 @@ func (a *App) Update() {
 			}
 
 			runtime.EventsEmit(a.ctx, "time", hour, minute)
-			savefile()
-			if stop {
-				break
-			}
+
 		}
 		wg.Done()
 	}()
 	wg.Wait()
 }
 
-func (a *App) Stop() {
-	stop = true
-}
-
-func savefile() {
+func (a *App) SaveFile(data string) {
+	// data := strconv.Itoa(hour) + ":" + strconv.Itoa(minute)
 	_ = os.Mkdir(configFolder, os.ModePerm)
-
-	data := strconv.Itoa(hour) + ":" + strconv.Itoa(minute)
 	_ = ioutil.WriteFile(file, []byte(data), 0644)
 }
 

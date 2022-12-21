@@ -1,81 +1,60 @@
 <script>
-  import {Start} from '../wailsjs/go/main/App.js'
-  import {Stop} from '../wailsjs/go/main/App.js'
-  import {Initialize} from '../wailsjs/go/main/App.js'
+  import { each } from "svelte/internal";
+  import { Start } from "../wailsjs/go/main/App.js";
+  import { Stop } from "../wailsjs/go/main/App.js";
+  import { Initialize, SetTime } from "../wailsjs/go/main/App.js";
+  import Card from "./Card.svelte";
+  import TitleBar from "./TitleBar.svelte";
 
-  
   // @ts-ignore
-  window.runtime.EventsOn("time", function(...args) {
-      hour = args[0]
-      minute = args[1]
-      console.log(args)
-  })
+  window.runtime.EventsOn("time", function (...args) {
+    hours = args[0];
+    minutes = args[1];
+    console.log(args);
+  });
 
-  Initialize()
-  
-  let buttonText = "Start"
-  let cal = true
+  Initialize();
 
-  let hour = "0"
-  let minute = "0"
-  
-  function start(){
-    Start()
-    buttonText = "Stop"
-    cal = !cal
+  // let buttonText = "Start";
+  // let cal = true;
+
+  let hours;
+  let minutes;
+  let time;
+  let active;
+
+  $: {
+    SetTIme(projects[active].hours, projects[active].minutes);
+    projects[active].hours = hours;
+    projects[active].minutes = minutes;
   }
 
-  function stop(){
-      Stop()
-      buttonText = "Start"
-      cal = !cal
-  }
-
-  function min(){
-  // @ts-ignore
-  window.runtime.WindowMinimise()
-  }
-  function max(){
-  // @ts-ignore
-  window.runtime.WindowMaximise()
-  }
-
-  function quit(){
-  // @ts-ignore
-  window.runtime.Quit()
-  }
-
+  let projects = [
+    { name: "Project1", hours: 0, minutes: 0 },
+    { name: "Project2", hours: 0, minutes: 0 },
+    { name: "Project3", hours: 0, minutes: 0 },
+    { name: "Project4", hours: 0, minutes: 0 },
+  ];
 </script>
 
 <main>
-  <header>
-    <span id="title-label" data-wails-drag>Time Tracker</span>
-		<span on:click="{min}">-</span>
-		<span on:click="{quit}">x</span>
-  </header>
-  <h1>{hour}hr {minute}min</h1>
-  <button class="{cal ? 'start' : 'stop'}" on:click="{cal ? start : stop}">{buttonText}</button>
+  <TitleBar />
+  <!-- <h1>{hour}hr {minute}min</h1>
+  <button class={cal ? "start" : "stop"} on:click={cal ? start : stop}
+    >{buttonText}</button
+  > -->
+  <div class="cards">
+    {#each projects as data, i}
+      <Card {data} on:click={() => (active = i)} />
+    {/each}
+  </div>
 </main>
 
 <style>
-  header{
-    cursor:'pointer';
-    width:100%;
-    height: 32px;
-    background:rgba(0, 0, 0, 0.5);
-  }
-  button{
-    font-size:16px;
-    padding:16px 24px;
-    color:white;
-    border-radius:16px;
-    border:none;
-    outline: none;
-  }
-  .start{
-    background: rgb(23, 38, 121);
-  }
-  .stop{
-    background: rgb(110, 36, 15);
+  .cards {
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
   }
 </style>
